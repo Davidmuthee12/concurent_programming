@@ -27,3 +27,15 @@ func countLetters(url string, frequency []int) {
 	}
 	fmt.Println("Completed:", url)
 }
+
+func main() {
+	var frequency = make([]int,26)
+	for i := 1000; i <= 1030; i++ {
+		url := fmt.Sprintf("https://rfc-editor.org/rfc/rfc%d.txt", i)
+		countLetters(url, frequency)
+	}
+
+	for i, c := range allLetters {
+		fmt.Printf("%c-%d", c, frequency[i])
+	}
+}
