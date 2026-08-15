@@ -1,5 +1,6 @@
 // This programs runs sequentially
-package main
+// uncomment the line below to run this program in same package
+// package main
 
 import (
 	"fmt"
