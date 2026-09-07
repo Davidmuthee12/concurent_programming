@@ -76,12 +76,16 @@ func main() {
 	fmt.Println("Server listening on http://localhost:8087")
 
 	for {
-		conn, err := server.Accept()
-		if err != nil {
-			fmt.Println("Failed to accept connection:", err)
-			continue
+		conn, _ := server.Accept()
+		select {
+		case incomingConnections <- conn:
+			// when no goroutine are consumins from the work queue, the default case triggers
+		default:
+			fmt.Println("Server is busy")
+			conn.Write([]byte("HTTP/1.1 429 Too many request\r\n\r\n" + 
+			// Returns "busy" message to clients
+				"<html>Busy</html>\n"))
+			conn.Close() //close client connection
 		}
-
-		incomingConnections <- conn
 	}
 }
