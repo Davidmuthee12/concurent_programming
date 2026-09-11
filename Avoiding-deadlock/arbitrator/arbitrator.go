@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 	"sync"
 	"time"
 )
@@ -75,15 +76,24 @@ func (a *Arbitrator) UnlockAccounts(ids... string) {
 }
 
 func (src *BankAccount) Transfer(to *BankAccount, amount int, tellerId int, arb *Arbitrator) {
-	fmt.Printf("%d locking %s and %s\n", tellerId, src.id, to.id)
-	// Locks both the source and target accounts
-	arb.LockAccounts(src.id, to.id)
-	// Performs the transfer once both locks are obtained
+	// places the source and target accounts into a slice
+	accounts := []*BankAccount{src, to}
+	// Sorts the slice containing both accounts by their ID
+	sort.Slice(accounts, func(a, b int) bool {
+		return accounts[a].id < accounts[b].id
+	})
+	fmt.Printf("%d locking %s's account\n", tellerId, accounts[0].id)
+	// Locks the account with the lower order by ID
+	accounts[0].mutex.Lock()
+	fmt.Printf("%d locking %s's account\n", tellerId, accounts[1].id)
+	// Locks the account with the higher order by ID
+	accounts[1].mutex.Lock()
 	src.balance -= amount
 	to.balance += amount
-	// unlocks both accounts after transfer
-	arb.UnlockAccounts(src.id, to.id)
-	fmt.Printf("%d Unlocked %s and %s\n", tellerId, src.id, to.id)
+	// Unlocks both accounts
+	to.mutex.Unlock()
+	src.mutex.Unlock()
+	fmt.Printf("%d Unocked %s and %s\n", tellerId, src.id, to.id)
 }
 
 // main() function using the arbitrator
